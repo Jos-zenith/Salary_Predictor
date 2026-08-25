@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Run a Prediction — SalaryPredict AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <nav class="navbar">
+        <a href="{{ url_for('home') }}" class="nav-logo"><span class="mark">S</span>SalaryPredict AI</a>
+        <ul class="nav-links">
+          <li><a href="{{ url_for('home') }}">Home</a></li>
+          <li><a href="{{ url_for('about_tech') }}">Methodology</a></li>
+          <li><a href="{{ url_for('predict_form') }}" class="active">Predict</a></li>
+        </ul>
+        <button class="nav-toggle" aria-label="toggle navigation">
+          <span class="hamburger"></span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container-narrow" style="padding-bottom:80px;">
+    <div class="form-shell">
+      <div class="form-header">
+        <h1>Run a prediction</h1>
+        <p>These five fields are exactly what the model was trained on — nothing else factors into the estimate below.</p>
+      </div>
+
+      <form id="prediction-form" action="{{ url_for('predict') }}" method="POST">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="age">Age</label>
+            <input type="number" id="age" name="Age" min="18" max="80" step="1" required
+                   placeholder="e.g., 32" value="{{ form_data.get('Age', '') }}">
+          </div>
+
+          <div class="form-group">
+            <label for="years_of_experience">Years of experience</label>
+            <input type="number" id="years_of_experience" name="Years of Experience" min="0" max="50" step="1" required
+                   placeholder="e.g., 5" value="{{ form_data.get('Years of Experience', '') }}">
+          </div>
+
+          <div class="form-group">
+            <label for="gender">Gender</label>
+            <select id="gender" name="Gender" required>
+              <option value="" disabled {% if not form_data.get('Gender') %}selected{% endif %}>Select</option>
+              <option value="Male" {% if form_data.get('Gender') == 'Male' %}selected{% endif %}>Male</option>
+              <option value="Female" {% if form_data.get('Gender') == 'Female' %}selected{% endif %}>Female</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="education_level">Education level</label>
+            <select id="education_level" name="Education Level" required>
+              <option value="" disabled {% if not form_data.get('Education Level') %}selected{% endif %}>Select</option>
+              <option value="Bachelor's" {% if form_data.get('Education Level') == "Bachelor's" %}selected{% endif %}>Bachelor's</option>
+              <option value="Master's" {% if form_data.get('Education Level') == "Master's" %}selected{% endif %}>Master's</option>
+              <option value="PhD" {% if form_data.get('Education Level') == "PhD" %}selected{% endif %}>PhD</option>
+            </select>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="job_title">Job title</label>
+            <select id="job_title" name="Job Title" required>
+              <option value="" disabled {% if not form_data.get('Job Title') %}selected{% endif %}>Select</option>
+              <option value="Software Engineer" {% if form_data.get('Job Title') == 'Software Engineer' %}selected{% endif %}>Software Engineer</option>
+              <option value="Data Analyst" {% if form_data.get('Job Title') == 'Data Analyst' %}selected{% endif %}>Data Analyst</option>
+              <option value="HR Manager" {% if form_data.get('Job Title') == 'HR Manager' %}selected{% endif %}>HR Manager</option>
+              <option value="Sales Manager" {% if form_data.get('Job Title') == 'Sales Manager' %}selected{% endif %}>Sales Manager</option>
+              <option value="Director" {% if form_data.get('Job Title') == 'Director' %}selected{% endif %}>Director</option>
+              <option value="CEO" {% if form_data.get('Job Title') == 'CEO' %}selected{% endif %}>CEO</option>
+            </select>
+          </div>
+
+          <p class="form-note"><i class="fas fa-circle-info"></i> Nothing you enter here is stored — it's used once, to compute this prediction.</p>
+
+          <div class="form-submit">
+            <button type="submit" class="btn btn-primary btn-block btn-lg">Predict salary</button>
+          </div>
+        </div>
+      </form>
+
+      {% if prediction_text or error_text %}
+        <div class="result-card {% if prediction_text %}success{% else %}error{% endif %}">
+          {% if prediction_text %}
+            <span class="result-label">Predicted annual salary</span>
+            <div class="result-value">{{ prediction_text }}</div>
+            <div class="result-actions">
+              <a id="download-pdf-btn" href="#" class="btn btn-outline"><i class="fas fa-file-arrow-down"></i> Download report (PDF)</a>
+            </div>
+            <p class="result-hint">An estimate from historical data, not a guarantee — use it as one input to your decision, not the whole answer.</p>
+          {% else %}
+            <span class="result-label">Prediction failed</span>
+            <div class="result-value">{{ error_text }}</div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if explanation %}
+        <div class="explain-card">
+          <h3><i class="fas fa-magnifying-glass-chart"></i> Why this number</h3>
+          <p class="explain-baseline">
+            Baseline for an average profile: <strong>{{ explanation.base_text }}</strong>.
+            Each factor below is an exact contribution from this model — computed with SHAP,
+            not estimated — and they sum precisely to the prediction above.
+          </p>
+          {% for c in explanation.contributions %}
+            <div class="explain-row">
+              <div class="explain-row-top">
+                <span><span class="explain-row-label">{{ c.feature }}</span> <span class="explain-row-value">— {{ c.display_value }}</span></span>
+                <span class="explain-row-delta {% if c.positive %}up{% else %}down{% endif %}">{{ c.value_display }}</span>
+              </div>
+              <div class="explain-bar-track">
+                <div class="explain-bar-fill {% if c.positive %}up{% else %}down{% endif %}" style="width: {{ c.width_pct }}%;"></div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </main>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script>
+    // Download the PDF report: the server recomputes the prediction from
+    // these submitted values, rather than trusting a number sent back from
+    // the browser, so it always matches the model.
+    document.addEventListener('DOMContentLoaded', function () {
+      const downloadBtn = document.getElementById('download-pdf-btn');
+      if (!downloadBtn) return;
+      downloadBtn.addEventListener('click', function (event) {
+        event.preventDefault();
+        const form = document.getElementById('prediction-form');
+        const params = new URLSearchParams();
+        params.append('age', form.elements['Age'].value);
+        params.append('gender', form.elements['Gender'].value);
+        params.append('education', form.elements['Education Level'].value);
+        params.append('job_title', form.elements['Job Title'].value);
+        params.append('experience', form.elements['Years of Experience'].value);
+        window.location.href = "{{ url_for('download_report') }}?" + params.toString();
+      });
+    });
+  </script>
+</body>
+</html>
