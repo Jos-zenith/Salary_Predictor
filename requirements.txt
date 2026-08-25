@@ -2,7 +2,7 @@ Flask==3.0.3
 joblib==1.4.2
 numpy==1.26.4
 pandas==2.2.2
-scikit-learn==1.5.1
+scikit-learn==1.5.2
 shap==0.46.0
 fpdf2==2.7.9
 gunicorn==22.0.0
