@@ -1,0 +1,42 @@
+[
+  {
+    "feature": "num__years_experience",
+    "mean_abs_shap_lpa": 4.774610439627209
+  },
+  {
+    "feature": "cat__level_Junior",
+    "mean_abs_shap_lpa": 4.240122241918964
+  },
+  {
+    "feature": "cat__target_market_Cross-border",
+    "mean_abs_shap_lpa": 2.573607895153953
+  },
+  {
+    "feature": "num__health_score",
+    "mean_abs_shap_lpa": 2.5225279882324205
+  },
+  {
+    "feature": "cat__level_Mid",
+    "mean_abs_shap_lpa": 1.9091420955945515
+  },
+  {
+    "feature": "cat__role_ML / AI Engineer",
+    "mean_abs_shap_lpa": 1.0303385499022728
+  },
+  {
+    "feature": "cat__funding_stage_Pre-IPO / Public",
+    "mean_abs_shap_lpa": 0.961689194272284
+  },
+  {
+    "feature": "cat__role_archetype_GTM",
+    "mean_abs_shap_lpa": 0.9456469425851793
+  },
+  {
+    "feature": "cat__funding_stage_Series C+",
+    "mean_abs_shap_lpa": 0.9324207752462376
+  },
+  {
+    "feature": "cat__level_Lead / Principal",
+    "mean_abs_shap_lpa": 0.9306392530883575
+  }
+]

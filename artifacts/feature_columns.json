@@ -1,0 +1,17 @@
+{
+  "categorical": [
+    "role_archetype",
+    "role",
+    "level",
+    "city",
+    "funding_stage",
+    "target_market",
+    "skill_category",
+    "education_pedigree",
+    "pricing_model"
+  ],
+  "numeric": [
+    "years_experience",
+    "health_score"
+  ]
+}

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}CompIntel{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="app-sidebar">
+      <a href="{{ url_for('home') }}" class="sidebar-brand"><span class="mark">C</span>CompIntel</a>
+      <nav class="sidebar-nav">
+        <a href="{{ url_for('predict_form') }}" class="sidebar-link {% if request.endpoint in ['predict_form', 'predict'] %}active{% endif %}"><i class="fas fa-sliders"></i> Predict</a>
+        <a href="{{ url_for('compare_page') }}" class="sidebar-link {% if request.endpoint == 'compare_page' %}active{% endif %}"><i class="fas fa-scale-balanced"></i> Compare Offers</a>
+        <a href="{{ url_for('saas_metrics_page') }}" class="sidebar-link {% if request.endpoint == 'saas_metrics_page' %}active{% endif %}"><i class="fas fa-calculator"></i> SaaS Metrics</a>
+        <a href="{{ url_for('compliance_check_page') }}" class="sidebar-link {% if request.endpoint == 'compliance_check_page' %}active{% endif %}"><i class="fas fa-clipboard-check"></i> Compliance Check</a>
+        <a href="{{ url_for('about_tech') }}" class="sidebar-link {% if request.endpoint == 'about_tech' %}active{% endif %}"><i class="fas fa-flask"></i> Methodology</a>
+      </nav>
+      <div class="sidebar-foot">
+        <a href="{{ url_for('home') }}" class="sidebar-back"><i class="fas fa-arrow-left"></i> Back to overview</a>
+      </div>
+    </aside>
+
+    <div class="app-main">
+      <div class="app-topbar">
+        <button class="sidebar-toggle" id="sidebar-toggle" aria-label="toggle navigation"><span class="hamburger"></span></button>
+        <h1 class="app-topbar-title">{% block topbar_title %}{% endblock %}</h1>
+        <div class="app-topbar-spacer"></div>
+      </div>
+      <div class="app-content">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

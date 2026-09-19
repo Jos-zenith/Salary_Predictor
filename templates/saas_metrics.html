@@ -1,0 +1,158 @@
+{% extends "_app_shell.html" %}
+{% block title %}SaaS Metrics — CompIntel{% endblock %}
+{% block topbar_title %}SaaS metrics calculator{% endblock %}
+
+{% block content %}
+<div class="split-panel">
+  <div class="split-panel-input">
+    <div class="panel-heading"><i class="fas fa-calculator"></i> Company raw numbers</div>
+    <form method="POST" action="{{ url_for('saas_metrics_page') }}">
+      <div class="form-section-label">Revenue &amp; growth</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Current MRR (Rs.)</label><input type="number" name="mrr" required value="{{ form_data.get('mrr','') }}"></div>
+        <div class="form-group"><label>Prior month MRR (Rs.)</label><input type="number" name="prior_mrr" required value="{{ form_data.get('prior_mrr','') }}"></div>
+        <div class="form-group"><label>YoY growth % (optional override)</label><input type="number" name="yoy_growth_pct" value="{{ form_data.get('yoy_growth_pct','') }}"></div>
+        <div class="form-group"><label>Profit margin %</label><input type="number" name="profit_margin_pct" required value="{{ form_data.get('profit_margin_pct','') }}"></div>
+        <div class="form-group"><label>Prior quarter revenue (Rs.)</label><input type="number" name="prior_quarter_revenue" required value="{{ form_data.get('prior_quarter_revenue','') }}"></div>
+        <div class="form-group"><label>Current quarter revenue (Rs.)</label><input type="number" name="current_quarter_revenue" required value="{{ form_data.get('current_quarter_revenue','') }}"></div>
+        <div class="form-group full-width"><label>Prior quarter S&amp;M spend (Rs.)</label><input type="number" name="prior_quarter_sm_spend" required value="{{ form_data.get('prior_quarter_sm_spend','') }}"></div>
+      </div>
+
+      <div class="form-section-label">Unit economics &amp; retention</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Revenue this period (Rs.)</label><input type="number" name="revenue" required value="{{ form_data.get('revenue','') }}"></div>
+        <div class="form-group"><label>COGS this period (Rs.)</label><input type="number" name="cogs" required value="{{ form_data.get('cogs','') }}"></div>
+        <div class="form-group"><label>Customers lost (period)</label><input type="number" name="customers_lost" required value="{{ form_data.get('customers_lost','') }}"></div>
+        <div class="form-group"><label>Customers at period start</label><input type="number" name="customers_start" required value="{{ form_data.get('customers_start','') }}"></div>
+        <div class="form-group"><label>S&amp;M spend (period, Rs.)</label><input type="number" name="sm_spend" required value="{{ form_data.get('sm_spend','') }}"></div>
+        <div class="form-group"><label>New customers acquired</label><input type="number" name="new_customers" required value="{{ form_data.get('new_customers','') }}"></div>
+        <div class="form-group"><label>ARPA — avg revenue/account (Rs./yr)</label><input type="number" name="arpa" required value="{{ form_data.get('arpa','') }}"></div>
+        <div class="form-group"><label>CAC (optional override, Rs.)</label><input type="number" name="cac" value="{{ form_data.get('cac','') }}"></div>
+        <div class="form-group"><label>NDR % (optional override)</label><input type="number" name="ndr" value="{{ form_data.get('ndr','') }}"></div>
+        <div class="form-group"><label>Headcount</label><input type="number" name="headcount" required value="{{ form_data.get('headcount','') }}"></div>
+      </div>
+
+      <div class="form-section-label">Market sizing</div>
+      <div class="form-grid">
+        <div class="form-group"><label>TAM (Rs.)</label><input type="number" name="tam" required value="{{ form_data.get('tam','') }}"></div>
+        <div class="form-group"><label>SAM (Rs.)</label><input type="number" name="sam" required value="{{ form_data.get('sam','') }}"></div>
+        <div class="form-group"><label>SOM (Rs.)</label><input type="number" name="som" required value="{{ form_data.get('som','') }}"></div>
+      </div>
+
+      <div class="form-submit" style="margin-top:20px;">
+        <button type="submit" class="btn btn-primary btn-block btn-lg">Compute metrics</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="split-panel-output">
+    {% if error_text %}
+      <div class="result-card error">
+        <span class="result-label">Could not compute</span>
+        <div class="result-value">{{ error_text }}</div>
+      </div>
+    {% elif result %}
+      <div class="kpi-hero">
+        <div class="kpi-tile-label"><i class="fas fa-gauge-high"></i> SaaS health score</div>
+        <div class="kpi-tile-value">{{ result.health.score }}/100</div>
+        <div class="meter">
+          <div class="meter-track">
+            <div class="meter-fill" style="width: {{ meter_pct(result.health.score, 0, 100) }}%;"></div>
+          </div>
+        </div>
+        <div class="kpi-tile-sub">{{ result.health.band }} — authored weighting (Rule of 40 30% + NDR 30% + LTV:CAC 20% + ARR/employee 20%), not an industry-standard formula</div>
+      </div>
+
+      <div class="explain-card" style="margin-top:16px;">
+        <h3><i class="fas fa-scale-balanced"></i> Against the cited SaaS benchmarks</h3>
+        <p class="explain-baseline">The three ratios the health score actually weighs, plotted against the thresholds cited in Methodology.</p>
+
+        <div class="diverging-row" style="margin-top:4px;">
+          <div class="explain-row-top">
+            <span class="explain-row-label">Rule of 40</span>
+            <span class="explain-row-value mono">{{ "%.1f"|format(result.rule_of_40) }}</span>
+          </div>
+          <div class="meter">
+            <div class="meter-track">
+              <div class="meter-fill {% if result.rule_of_40 < 40 %}warning{% endif %}" style="width: {{ meter_pct(result.rule_of_40, -20, 100) }}%;"></div>
+              <div class="meter-ref" style="left: {{ meter_pct(40, -20, 100) }}%;"></div>
+            </div>
+          </div>
+          <p class="result-hint" style="margin-top:5px;">&ge;40 (growth % + margin %) is the cited healthy bar</p>
+        </div>
+
+        <div class="diverging-row">
+          <div class="explain-row-top">
+            <span class="explain-row-label">LTV:CAC</span>
+            <span class="explain-row-value mono">{{ "%.2f"|format(result.ltv_cac_ratio) }} : 1</span>
+          </div>
+          <div class="meter">
+            <div class="meter-track">
+              <div class="meter-fill {% if result.ltv_cac_ratio < 3 %}warning{% endif %}" style="width: {{ meter_pct(result.ltv_cac_ratio, 0, 6) }}%;"></div>
+              <div class="meter-ref" style="left: {{ meter_pct(3, 0, 6) }}%;"></div>
+            </div>
+          </div>
+          <p class="result-hint" style="margin-top:5px;">&ge;3:1 is the cited healthy bar</p>
+        </div>
+
+        <div class="diverging-row">
+          <div class="explain-row-top">
+            <span class="explain-row-label">NDR</span>
+            <span class="explain-row-value mono">{{ "%.1f"|format(result.ndr_pct) }}%</span>
+          </div>
+          <div class="meter">
+            <div class="meter-track">
+              <div class="meter-fill {% if result.ndr_pct < 100 %}danger{% elif result.ndr_pct < 106 %}warning{% endif %}" style="width: {{ meter_pct(result.ndr_pct, 80, 130) }}%;"></div>
+              <div class="meter-ref" style="left: {{ meter_pct(106, 80, 130) }}%;"></div>
+              <div class="meter-ref" style="left: {{ meter_pct(120, 80, 130) }}%;"></div>
+            </div>
+          </div>
+          <p class="result-hint" style="margin-top:5px;">Industry median ~106%, top-quartile &ge;120% (KeyBanc)</p>
+        </div>
+      </div>
+
+      <div class="explain-card">
+        <h3><i class="fas fa-chart-line"></i> Computed metrics</h3>
+        <table class="metrics-table">
+          <tbody>
+            <tr><td>ARR <span class="formula">MRR &times; 12</span></td><td>Rs.{{ "{:,.0f}".format(result.arr) }}</td></tr>
+            <tr><td>Growth rate <span class="formula">(current - prior) / prior</span></td><td>{{ "%.1f"|format(result.growth_rate_pct) }}%</td></tr>
+            <tr><td>Gross margin <span class="formula">(Revenue - COGS) / Revenue</span></td><td>{{ "%.1f"|format(result.gross_margin_pct) }}%</td></tr>
+            <tr><td>Churn rate <span class="formula">Lost / Start</span></td><td>{{ "%.1f"|format(result.churn_rate_pct) }}%</td></tr>
+            <tr><td>CAC <span class="formula">S&amp;M spend / new customers</span></td><td>Rs.{{ "{:,.0f}".format(result.cac) }}</td></tr>
+            <tr><td>LTV <span class="formula">(ARPA &times; Gross Margin) / Churn</span></td><td>Rs.{{ "{:,.0f}".format(result.ltv) }}</td></tr>
+            <tr><td>LTV:CAC <span class="formula">&ge;3:1 is healthy</span></td><td>{{ "%.2f"|format(result.ltv_cac_ratio) }} : 1</td></tr>
+            <tr><td>NDR <span class="formula">Cohort revenue end / start</span></td><td>{{ "%.1f"|format(result.ndr_pct) }}%</td></tr>
+            <tr><td>Rule of 40 <span class="formula">Growth % + Margin %, &ge;40 healthy</span></td><td>{{ "%.1f"|format(result.rule_of_40) }}</td></tr>
+            <tr><td>SaaS Magic Number <span class="formula">(&Delta;Qtr Rev &times; 4) / prior S&amp;M</span></td><td>{{ "%.2f"|format(result.magic_number) }}</td></tr>
+            <tr><td>ARR per employee</td><td>Rs.{{ "{:,.0f}".format(result.arr_per_employee) }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="explain-card">
+        <h3><i class="fas fa-map"></i> Market opportunity (TAM/SAM/SOM)</h3>
+        <div class="kpi-row">
+          <div class="kpi-tile"><div class="kpi-tile-label">SAM of TAM</div><div class="kpi-tile-value">{{ result.market.sam_of_tam_pct }}%</div></div>
+          <div class="kpi-tile"><div class="kpi-tile-label">SOM of SAM</div><div class="kpi-tile-value">{{ result.market.som_of_sam_pct }}%</div></div>
+          <div class="kpi-tile"><div class="kpi-tile-label">SOM of TAM</div><div class="kpi-tile-value">{{ result.market.som_of_tam_pct }}%</div></div>
+        </div>
+        <p class="explain-baseline" style="margin-top:14px;">{{ result.market.tier }}</p>
+      </div>
+
+      <p class="result-hint" style="text-align:center; margin-top:8px;">
+        <a href="{{ url_for('predict_form') }}">Use these numbers in the compensation predictor <i class="fas fa-arrow-right" style="font-size:0.8em;"></i></a>
+      </p>
+    {% else %}
+      <div class="output-empty">
+        <p class="output-empty-lead">Enter your company's raw numbers on the left to compute:</p>
+        <ul class="output-empty-list">
+          <li><span class="output-empty-tag">Growth</span> ARR, growth rate, gross margin, churn</li>
+          <li><span class="output-empty-tag">Unit econ</span> CAC, LTV, LTV:CAC, NDR, Rule of 40, Magic Number</li>
+          <li><span class="output-empty-tag">Sizing</span> TAM/SAM/SOM, and a computed SaaS health score</li>
+        </ul>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

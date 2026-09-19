@@ -1,0 +1,161 @@
+{% extends "_app_shell.html" %}
+{% block title %}Compare Offers — CompIntel{% endblock %}
+{% block topbar_title %}Compare two offers{% endblock %}
+
+{% block content %}
+<div class="explain-card" style="max-width:960px; margin:0 auto 24px;">
+  <div class="panel-heading" style="margin-bottom:16px;"><i class="fas fa-scale-balanced"></i> Same candidate, two companies</div>
+  <form method="POST" action="{{ url_for('compare_page') }}">
+    <div class="form-section-label">Your profile</div>
+    <div class="form-grid">
+      <div class="form-group full-width">
+        <label for="role">Role</label>
+        <select id="role" name="role" required>
+          <option value="" disabled {% if not form_data.get('role') %}selected{% endif %}>Select a role</option>
+          {% for archetype, roles in role_archetypes.items() %}
+            <optgroup label="{{ archetype }}">
+              {% for role_name in roles %}
+                <option value="{{ role_name }}" {% if form_data.get('role') == role_name %}selected{% endif %}>{{ role_name }}</option>
+              {% endfor %}
+            </optgroup>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="years_experience">Years of experience</label>
+        <input type="number" id="years_experience" name="years_experience" min="0" max="45" step="0.5" required value="{{ form_data.get('years_experience', '') }}">
+      </div>
+      <div class="form-group">
+        <label for="city">City</label>
+        <select id="city" name="city" required>
+          <option value="" disabled {% if not form_data.get('city') %}selected{% endif %}>Select</option>
+          {% for city_name, (tier, _mult) in cities.items() %}
+            <option value="{{ city_name }}" {% if form_data.get('city') == city_name %}selected{% endif %}>{{ city_name }} ({{ tier }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="skill_category">Skill category</label>
+        <select id="skill_category" name="skill_category" required>
+          <option value="" disabled {% if not form_data.get('skill_category') %}selected{% endif %}>Select</option>
+          {% for skill in skill_categories %}
+            <option value="{{ skill }}" {% if form_data.get('skill_category') == skill %}selected{% endif %}>{{ skill }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="education_pedigree">Education pedigree</label>
+        <select id="education_pedigree" name="education_pedigree" required>
+          <option value="" disabled {% if not form_data.get('education_pedigree') %}selected{% endif %}>Select</option>
+          {% for pedigree in education_pedigree %}
+            <option value="{{ pedigree }}" {% if form_data.get('education_pedigree') == pedigree %}selected{% endif %}>{{ pedigree }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:22px;">
+      <div>
+        <div class="form-section-label" style="color: var(--primary);">Company A</div>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>Funding stage</label>
+          <select name="company_a_funding_stage" required>
+            <option value="" disabled {% if not form_data.get('company_a_funding_stage') %}selected{% endif %}>Select</option>
+            {% for stage in funding_stages %}<option value="{{ stage }}" {% if form_data.get('company_a_funding_stage') == stage %}selected{% endif %}>{{ stage }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>Target market</label>
+          <select name="company_a_target_market" required>
+            <option value="" disabled {% if not form_data.get('company_a_target_market') %}selected{% endif %}>Select</option>
+            {% for market in target_markets %}<option value="{{ market }}" {% if form_data.get('company_a_target_market') == market %}selected{% endif %}>{{ market }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Pricing model</label>
+          <select name="company_a_pricing_model" required>
+            <option value="" disabled {% if not form_data.get('company_a_pricing_model') %}selected{% endif %}>Select</option>
+            {% for model in pricing_models %}<option value="{{ model }}" {% if form_data.get('company_a_pricing_model') == model %}selected{% endif %}>{{ model }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+      <div>
+        <div class="form-section-label" style="color: var(--accent);">Company B</div>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>Funding stage</label>
+          <select name="company_b_funding_stage" required>
+            <option value="" disabled {% if not form_data.get('company_b_funding_stage') %}selected{% endif %}>Select</option>
+            {% for stage in funding_stages %}<option value="{{ stage }}" {% if form_data.get('company_b_funding_stage') == stage %}selected{% endif %}>{{ stage }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>Target market</label>
+          <select name="company_b_target_market" required>
+            <option value="" disabled {% if not form_data.get('company_b_target_market') %}selected{% endif %}>Select</option>
+            {% for market in target_markets %}<option value="{{ market }}" {% if form_data.get('company_b_target_market') == market %}selected{% endif %}>{{ market }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Pricing model</label>
+          <select name="company_b_pricing_model" required>
+            <option value="" disabled {% if not form_data.get('company_b_pricing_model') %}selected{% endif %}>Select</option>
+            {% for model in pricing_models %}<option value="{{ model }}" {% if form_data.get('company_b_pricing_model') == model %}selected{% endif %}>{{ model }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <p class="form-note" style="margin-top:18px;"><i class="fas fa-circle-info"></i> Quick comparison mode — uses each company's funding-stage default health score. For a precise, metrics-based estimate, use the main <a href="{{ url_for('predict_form') }}">predictor</a>.</p>
+
+    <div class="form-submit" style="margin-top:14px;">
+      <button type="submit" class="btn btn-primary btn-block btn-lg">Compare</button>
+    </div>
+  </form>
+</div>
+
+{% if error_text %}
+  <div class="result-card error" style="max-width:960px; margin:0 auto;">
+    <span class="result-label">Could not compare</span>
+    <div class="result-value">{{ error_text }}</div>
+  </div>
+{% endif %}
+
+{% if result_a and result_b %}
+  {% set delta_pct = ((result_a.p50 - result_b.p50) / result_b.p50 * 100) if result_b.p50 else 0 %}
+  <div class="kpi-hero" style="max-width:960px; margin:0 auto 20px;">
+    <div class="kpi-tile-label"><i class="fas fa-scale-balanced"></i> Bottom line</div>
+    <div class="kpi-tile-value" style="font-size:1.4rem;">
+      {% if delta_pct > 0.5 %}Company A's median is {{ "%.0f"|format(delta_pct) }}% higher
+      {% elif delta_pct < -0.5 %}Company B's median is {{ "%.0f"|format(-delta_pct) }}% higher
+      {% else %}Roughly the same cash median{% endif %}
+    </div>
+  </div>
+
+  <div class="grid-2" style="max-width:960px; margin:0 auto;">
+    <div class="explain-card">
+      <h3 style="color:var(--primary);">Company A</h3>
+      <div class="kpi-tile" style="margin-top:10px;">
+        <div class="kpi-tile-label">Cash CTC range (P25-P75)</div>
+        <div class="kpi-tile-value">{{ result_a.range_text }}</div>
+      </div>
+      <div class="kpi-row" style="margin-top:14px;">
+        <div class="kpi-tile"><div class="kpi-tile-label">Health score</div><div class="kpi-tile-value">{{ result_a.health_score|round(0)|int }}/100</div></div>
+        <div class="kpi-tile"><div class="kpi-tile-label">Compa-ratio</div><div class="kpi-tile-value">{{ result_a.compa_ratio|round(2) if result_a.compa_ratio else "n/a" }}</div></div>
+      </div>
+      <p class="result-hint" style="margin-top:12px;">ESOP FMV: Rs.{{ "%.2f"|format(result_a.esop_annualized_lpa) }} LPA · expected value: Rs.{{ "%.2f"|format(result_a.esop_expected.expected_value_lpa) }} LPA</p>
+    </div>
+    <div class="explain-card">
+      <h3 style="color:var(--accent);">Company B</h3>
+      <div class="kpi-tile" style="margin-top:10px;">
+        <div class="kpi-tile-label">Cash CTC range (P25-P75)</div>
+        <div class="kpi-tile-value">{{ result_b.range_text }}</div>
+      </div>
+      <div class="kpi-row" style="margin-top:14px;">
+        <div class="kpi-tile"><div class="kpi-tile-label">Health score</div><div class="kpi-tile-value">{{ result_b.health_score|round(0)|int }}/100</div></div>
+        <div class="kpi-tile"><div class="kpi-tile-label">Compa-ratio</div><div class="kpi-tile-value">{{ result_b.compa_ratio|round(2) if result_b.compa_ratio else "n/a" }}</div></div>
+      </div>
+      <p class="result-hint" style="margin-top:12px;">ESOP FMV: Rs.{{ "%.2f"|format(result_b.esop_annualized_lpa) }} LPA · expected value: Rs.{{ "%.2f"|format(result_b.esop_expected.expected_value_lpa) }} LPA</p>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}
