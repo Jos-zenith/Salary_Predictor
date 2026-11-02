@@ -1,0 +1,69 @@
+{% extends "_app_shell.html" %}
+{% block title %}Compliance Check — CompIntel{% endblock %}
+{% block topbar_title %}CTC compliance check{% endblock %}
+
+{% block content %}
+<div class="split-panel">
+  <div class="split-panel-input">
+    <div class="panel-heading"><i class="fas fa-clipboard-check"></i> Offer components</div>
+    <p class="explain-baseline" style="margin-top:-8px; margin-bottom:16px;">Checked against the same India Code on Wages / HRA / EPF / Gratuity conventions this tool's own CTC breakup uses. A sanity check, not a certified legal or payroll audit.</p>
+    <form method="POST" action="{{ url_for('compliance_check_page') }}">
+      <div class="form-grid">
+        <div class="form-group"><label>Total CTC (Rs. LPA)</label><input type="number" step="0.01" name="total_ctc" required value="{{ form_data.get('total_ctc','') }}"></div>
+        <div class="form-group">
+          <label>City</label>
+          <select name="city" required>
+            <option value="" disabled {% if not form_data.get('city') %}selected{% endif %}>Select</option>
+            {% for city_name in cities %}
+              <option value="{{ city_name }}" {% if form_data.get('city') == city_name %}selected{% endif %}>{{ city_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group"><label>Basic + DA (Rs. LPA)</label><input type="number" step="0.01" name="basic" required value="{{ form_data.get('basic','') }}"></div>
+        <div class="form-group"><label>HRA (Rs. LPA)</label><input type="number" step="0.01" name="hra" required value="{{ form_data.get('hra','') }}"></div>
+        <div class="form-group"><label>Employer EPF contribution (Rs. LPA)</label><input type="number" step="0.01" name="epf" required value="{{ form_data.get('epf','') }}"></div>
+        <div class="form-group"><label>Gratuity accrual (Rs. LPA)</label><input type="number" step="0.01" name="gratuity" required value="{{ form_data.get('gratuity','') }}"></div>
+      </div>
+      <div class="form-submit" style="margin-top:20px;">
+        <button type="submit" class="btn btn-primary btn-block btn-lg">Run compliance check</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="split-panel-output">
+    {% if error_text %}
+      <div class="result-card error">
+        <span class="result-label">Could not run check</span>
+        <div class="result-value">{{ error_text }}</div>
+      </div>
+    {% elif checks %}
+      {% set all_passed = checks | selectattr("passed", "equalto", false) | list | length == 0 %}
+      <div class="kpi-hero" style="{% if not all_passed %}background: linear-gradient(135deg, #b91c1c, #7f1d1d);{% endif %}">
+        <div class="kpi-tile-label"><i class="fas {{ 'fa-circle-check' if all_passed else 'fa-triangle-exclamation' }}"></i> Overall</div>
+        <div class="kpi-tile-value" style="font-size:1.4rem;">{{ "All checks passed" if all_passed else (checks | rejectattr("passed") | list | length ~ " of " ~ checks|length ~ " checks failed") }}</div>
+      </div>
+
+      <div class="explain-card" style="margin-top:16px;">
+        {% for c in checks %}
+          <div class="explain-row">
+            <div class="explain-row-top">
+              <span class="explain-row-label"><i class="fas {{ 'fa-circle-check' if c.passed else 'fa-circle-xmark' }}" style="color: {{ 'var(--accent)' if c.passed else 'var(--danger)' }}; margin-right:8px;"></i>{{ c.rule }}</span>
+            </div>
+            <p class="result-hint" style="margin-top:4px; margin-left:26px;">{{ c.detail }}</p>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="output-empty">
+        <p class="output-empty-lead">Enter an offer's components on the left to check:</p>
+        <ul class="output-empty-list">
+          <li><span class="output-empty-tag">Basic</span> Basic + DA is at least 50% of CTC, per the Code on Wages</li>
+          <li><span class="output-empty-tag">HRA</span> Within the metro/non-metro convention this tool uses</li>
+          <li><span class="output-empty-tag">EPF</span> Employer contribution matches 12% of Basic</li>
+          <li><span class="output-empty-tag">Gratuity</span> Accrual matches the ~4.81%-of-Basic convention</li>
+        </ul>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{
+  "Linear Regression (baseline)": {
+    "r2": 0.8843733816449844,
+    "mae_lpa": 3.798782455535985,
+    "mape_pct": 21.330934816503905
+  },
+  "HistGradientBoostingRegressor (P50, production)": {
+    "r2": 0.9607333253156648,
+    "mae_lpa": 1.9535407266998441,
+    "mape_pct": 7.617287384901891
+  },
+  "quantile_monotonicity_pct": 81.35316894232729,
+  "cross_validation_5fold": {
+    "Linear Regression (baseline)": {
+      "r2_mean": 0.8784893124885553,
+      "r2_std": 0.004053905326108809,
+      "mae_mean_lpa": 3.780800465848235,
+      "mae_std_lpa": 0.036126640793034674
+    },
+    "HistGradientBoostingRegressor (P50, production)": {
+      "r2_mean": 0.9591251846531235,
+      "r2_std": 0.003320808842742325,
+      "mae_mean_lpa": 1.9429147401364801,
+      "mae_std_lpa": 0.04121547316953079
+    }
+  },
+  "face_validity_checks": [
+    {
+      "label": "Chennai, Domestic, Mid, Series A SaaS (cited: Rs.7.9-8.7 LPA for Chennai engineers)",
+      "predicted_p50_lpa": 15.72,
+      "cited_range_lpa": [
+        6.0,
+        12.0
+      ],
+      "within_cited_range": false
+    },
+    {
+      "label": "Bengaluru, Cross-border, Senior, Series C+ (cited: FAANG/cross-border tier Rs.35-60 LPA)",
+      "predicted_p50_lpa": 68.09,
+      "cited_range_lpa": [
+        28.0,
+        70.0
+      ],
+      "within_cited_range": true
+    },
+    {
+      "label": "Domestic Seed-stage SaaS, Junior (cited IT-services-adjacent range: Rs.3.5-6 LPA)",
+      "predicted_p50_lpa": 4.57,
+      "cited_range_lpa": [
+        4.0,
+        12.0
+      ],
+      "within_cited_range": true
+    }
+  ]
+}

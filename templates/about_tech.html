@@ -1,0 +1,170 @@
+{% extends "_app_shell.html" %}
+{% block title %}Methodology — CompIntel{% endblock %}
+{% block topbar_title %}Methodology &amp; SaaS primer{% endblock %}
+
+{% block content %}
+<p class="explain-baseline" style="max-width:760px; margin-bottom:28px;">
+  Grew out of a B2B SaaS Metrics course module (fundamentals, business models, pricing
+  models, and growth metrics) plus a final-year ML internship project. This page
+  documents both: the SaaS concepts, and how the model is built.
+</p>
+
+<!-- Course -> project traceability -->
+<h2 class="section-title" style="font-size:1.3rem; text-align:left; margin-bottom:16px;">Where each course topic lives in this project</h2>
+<div class="property-drawer" style="overflow-x:auto; margin-bottom:36px; padding:8px 20px;">
+  <table class="metrics-table">
+    <tbody>
+      <tr><td>SaaS fundamentals, IaaS/PaaS/SaaS, business models</td><td style="text-align:left; font-family:var(--font-main); color:var(--text-secondary); font-weight:400;">This page — conceptual primer below</td></tr>
+      <tr><td>Pricing models (subscription, freemium, tiered, pay-as-you-go, per-user)</td><td style="text-align:left; font-family:var(--font-main); color:var(--text-secondary); font-weight:400;">Primer below, and a live input feature on the predictor</td></tr>
+      <tr><td>ARR, MRR, Churn, CAC, LTV, LTV:CAC, NDR, Rule of 40, Magic Number, Gross Margin</td><td style="text-align:left; font-family:var(--font-main); color:var(--text-secondary); font-weight:400;"><code class="mono">saas_metrics.py</code> + the <a href="{{ url_for('saas_metrics_page') }}">SaaS Metrics calculator</a></td></tr>
+      <tr><td>TAM / SAM / SOM</td><td style="text-align:left; font-family:var(--font-main); color:var(--text-secondary); font-weight:400;"><code class="mono">market_opportunity_tier()</code> in the calculator</td></tr>
+      <tr><td>Funding stages, ESOP</td><td style="text-align:left; font-family:var(--font-main); color:var(--text-secondary); font-weight:400;">Compensation engine — funding-stage input, ESOP overlay</td></tr>
+      <tr><td>"Real-time" business signals</td><td style="text-align:left; font-family:var(--font-main); color:var(--text-secondary); font-weight:400;">Simulated live-signal layer — labeled as a simulation, see below</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- SaaS primer -->
+<h2 class="section-title" style="font-size:1.3rem; text-align:left; margin-bottom:16px;">SaaS primer</h2>
+<dl class="spec-list" style="margin-bottom:36px;">
+  <div class="spec-row">
+    <dt>What is SaaS?</dt>
+    <dd>Software licensed by subscription and hosted centrally, rather than sold as a one-time license and installed locally. IaaS provides raw infrastructure, PaaS a platform to build on, SaaS a finished application.</dd>
+  </div>
+  <div class="spec-row">
+    <dt>Business model types</dt>
+    <dd>Pure subscription, usage-based (pay-as-you-go), freemium-to-paid conversion, and affiliate/partner-led — each implies a different growth and margin profile, which is why <code class="mono">pricing_model</code> is a real input feature here.</dd>
+  </div>
+  <div class="spec-row">
+    <dt>Why investors like SaaS</dt>
+    <dd>Recurring revenue is predictable and compounds — high NDR means a company grows even with zero new sales, which is exactly what the Rule of 40 and NDR components of the health score reward.</dd>
+  </div>
+</dl>
+
+<!-- Metrics formulas -->
+<h2 class="section-title" style="font-size:1.3rem; text-align:left; margin-bottom:16px;">Growth metrics — formulas &amp; sources</h2>
+<div class="card" style="margin-bottom:16px;">
+  <table class="metrics-table">
+    <tbody>
+      <tr><td>ARR</td><td style="text-align:left; font-family:var(--font-mono); color:var(--text-secondary); font-weight:400;">MRR &times; 12</td></tr>
+      <tr><td>CAC</td><td style="text-align:left; font-family:var(--font-mono); color:var(--text-secondary); font-weight:400;">S&amp;M spend / new customers acquired</td></tr>
+      <tr><td>LTV</td><td style="text-align:left; font-family:var(--font-mono); color:var(--text-secondary); font-weight:400;">(ARPA &times; Gross Margin) / Churn Rate</td></tr>
+      <tr><td>LTV:CAC</td><td style="text-align:left; font-family:var(--font-mono); color:var(--text-secondary); font-weight:400;">&ge;3:1 is the standard "healthy" bar</td></tr>
+      <tr><td>NDR / NRR</td><td style="text-align:left; font-family:var(--font-mono); color:var(--text-secondary); font-weight:400;">Cohort revenue at period end / same cohort at period start. Industry median ≈106%, top-quartile ≥120% (KeyBanc Capital Markets benchmark).</td></tr>
+      <tr><td>Rule of 40</td><td style="text-align:left; font-family:var(--font-mono); color:var(--text-secondary); font-weight:400;">YoY growth % + profit margin %, &ge;40 healthy</td></tr>
+      <tr><td>SaaS Magic Number</td><td style="text-align:left; font-family:var(--font-mono); color:var(--text-secondary); font-weight:400;">(&Delta;Quarterly revenue &times; 4) / prior-quarter S&amp;M spend; &gt;0.75 efficient</td></tr>
+      <tr><td>Gross Margin</td><td style="text-align:left; font-family:var(--font-mono); color:var(--text-secondary); font-weight:400;">(Revenue - COGS) / Revenue</td></tr>
+      <tr><td>TAM/SAM/SOM</td><td style="text-align:left; font-family:var(--font-mono); color:var(--text-secondary); font-weight:400;">SOM/SAM and SAM/TAM ratios &rarr; a market-opportunity tier</td></tr>
+      <tr><td>Cross-border premium</td><td style="text-align:left; font-family:var(--font-mono); color:var(--text-secondary); font-weight:400;"><code class="mono">cross_border_premium_multiplier()</code> — 1.35x cross-border, 1.00x domestic baseline</td></tr>
+    </tbody>
+  </table>
+</div>
+<div class="card" style="margin-bottom:36px;">
+  <h3>SaaS Health Score — an authored rubric, not a standard formula</h3>
+  <p>No single industry-standard "SaaS health score" exists, so this is explicitly a weighted scheme built on the metrics above: Rule of 40 (30%) + NDR (30%) + LTV:CAC (20%) + ARR/employee (20%), each scaled 0-100 against its cited benchmark threshold, then blended into bands (Hypergrowth/Efficient, Healthy, Cash-constrained, At-risk). Declared as authored, not scraped from any external scoring system.</p>
+</div>
+
+<!-- Compensation model -->
+<h2 class="section-title" style="font-size:1.3rem; text-align:left; margin-bottom:16px;">Compensation model</h2>
+<div class="grid-2" style="margin-bottom:16px;">
+  <div class="card">
+    <h3>Training data</h3>
+    <p>
+      <code class="mono">data/generate_dataset.py</code> produces a seeded, synthetic dataset
+      of ~24,500 Indian SaaS employee profiles across ~1,000 synthetic companies —
+      explicitly synthetic, since real payroll data is confidential. Base pay bands,
+      city-tier premiums, and the cross-border premium are calibrated against real 2026
+      India SaaS compensation ranges (Chennai ~Rs.7.9-8.7 LPA; Freshworks/Zoho-tier
+      Rs.6-12 LPA; funded startups/unicorns Rs.15-30 LPA; cross-border/FAANG-tier
+      Rs.35-60 LPA). Each synthetic company's health score is computed by the exact same
+      <code class="mono">saas_metrics.py</code> functions the live calculator uses.
+    </p>
+  </div>
+  <div class="card">
+    <h3>Why quantile gradient boosting over linear regression</h3>
+    <p>
+      {% set lin = metrics.get("Linear Regression (baseline)", {}) %}
+      {% set boost = metrics.get("HistGradientBoostingRegressor (P50, production)", {}) %}
+      Level-based pay bands include real step-function jumps at promotion boundaries —
+      exactly what a linear model can't represent. On held-out data, Linear Regression
+      scores R²={{ "%.2f"|format(lin.get("r2", 0)) }} (MAE ±{{ "%.1f"|format(lin.get("mae_lpa", 0)) }} LPA)
+      versus {{ "%.2f"|format(boost.get("r2", 0)) }} (MAE ±{{ "%.1f"|format(boost.get("mae_lpa", 0)) }} LPA)
+      for a quantile-loss <code class="mono">HistGradientBoostingRegressor</code> — a real, measured gap, not
+      an assumed one. 5-fold cross-validation confirms it's stable, not a lucky split (see README).
+      Three separate models (alpha=0.25/0.5/0.75) produce the P25/P50/P75 range; predictions
+      are sorted at serving time to guard against quantile crossing.
+    </p>
+  </div>
+</div>
+<div class="card" style="margin-bottom:36px;">
+  <h3>CTC breakup &amp; ESOP</h3>
+  <p>
+    <code class="mono">ctc_rules.py</code> splits the median prediction per India's Code on Wages
+    (enforced 2026-04-01: Basic+DA &ge;50% of CTC), HRA at 50%/40% of Basic for metro/non-metro
+    cities, employer EPF at 12% of Basic, and gratuity accrual at ~4.81% of Basic — the
+    components always sum exactly to the predicted CTC (<a href="{{ url_for('compliance_check_page') }}">check an offer against these rules</a>).
+    ESOP is estimated two ways: a paper FMV via a documented, funding-stage-indexed cash:equity
+    table, and a risk-adjusted expected value (liquidity probability × payout multiple, by health
+    band) — explicitly a heuristic, not options pricing, since an illiquid private-company option
+    has no observable strike price or volatility to price one against.
+  </p>
+</div>
+
+<!-- Simulated live signals -->
+<h2 class="section-title" style="font-size:1.3rem; text-align:left; margin-bottom:16px;">The "real-time" layer — simulated, and labeled as such</h2>
+<div class="card" style="margin-bottom:36px;">
+  <p>
+    A genuinely live integration (Crunchbase/Tracxn funding webhooks, live job-board
+    scraping, a Kafka/Redis pipeline) needs paid API access, always-on infrastructure,
+    and raises scraping ToS concerns this project has neither the budget nor the standing
+    to take on. Rather than fake that connection, <code class="mono">market_signals.py</code>
+    runs a background emitter that produces synthetic market events (funding rounds,
+    hiring surges, retention shifts) as small, bounded, decaying adjustments held in memory,
+    streamed to the browser over Server-Sent Events (see the pill in the top bar). It
+    demonstrates the event-driven architecture — state, decay, a live-updating UI — that a
+    real feed would plug into at exactly one function (<code class="mono">_random_event()</code>),
+    without claiming a live connection that doesn't exist.
+  </p>
+</div>
+
+<!-- Tech stack -->
+<h2 class="section-title" style="font-size:1.3rem; text-align:left; margin-bottom:16px;">Technology stack</h2>
+<dl class="spec-list" style="margin-bottom:36px;">
+  <div class="spec-row">
+    <dt>Python &amp; Flask</dt>
+    <dd>Python for the modeling stack; Flask for a lightweight server, including a generator-based SSE endpoint for the live-signal feed.</dd>
+  </div>
+  <div class="spec-row">
+    <dt>Pandas, NumPy &amp; scikit-learn</dt>
+    <dd>Pandas/NumPy for data generation and feature engineering; scikit-learn's <code class="mono">HistGradientBoostingRegressor</code> (quantile loss) for the production model — no external boosting library needed.</dd>
+  </div>
+  <div class="spec-row">
+    <dt>SHAP</dt>
+    <dd><code class="mono">TreeExplainer</code> gives an exact, per-feature contribution for every prediction, aggregated from one-hot-encoded columns back to the original feature.</dd>
+  </div>
+</dl>
+
+<!-- Personal -->
+<h2 class="section-title" style="font-size:1.3rem; text-align:left; margin-bottom:16px;">Role &amp; reflections</h2>
+<dl class="spec-list" style="margin-bottom:36px;">
+  <div class="spec-row">
+    <dt>My role</dt>
+    <dd>Sole developer across the full lifecycle — SaaS domain modeling, synthetic data generation, model training, full-stack development, and deployment.</dd>
+  </div>
+  <div class="spec-row">
+    <dt>What I learned</dt>
+    <dd>How to turn a course module's formulas into a real feature-engineering pipeline, and where to draw an honest line between "simulated for the demo" and "actually implemented."</dd>
+  </div>
+  <div class="spec-row">
+    <dt>Roadmap</dt>
+    <dd>Planned: a real funding/hiring-signal integration behind the same event interface the simulation already uses, and broader role coverage beyond SaaS.</dd>
+  </div>
+</dl>
+
+<div class="card" style="text-align:center; padding:40px 32px;">
+  <h2 style="font-size:1.5rem; margin-bottom:12px;">Explore the project</h2>
+  <p class="section-subtitle" style="margin-bottom:22px;">Try the live model, or read the source on GitHub.</p>
+  <a href="{{ url_for('predict_form') }}" class="btn btn-primary btn-lg" style="margin:4px 8px;">Predict compensation</a>
+  <a href="https://github.com/Jos-zenith/Salary_Predictor" target="_blank" rel="noopener" class="btn btn-outline btn-lg" style="margin:4px 8px;">View source code</a>
+</div>
+{% endblock %}
